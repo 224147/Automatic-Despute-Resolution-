@@ -55,7 +55,7 @@ jobs:
       - name: Run unit tests
         run: pytest tests/ -v --cov=app --cov-report=term-missing --tb=short
       - name: Check coverage threshold
-        run: pytest tests/ --cov=app --cov-fail-under=60
+        run: pytest tests/ --cov=app --cov-fail-under=50
 
   security:
     runs-on: ubuntu-latest

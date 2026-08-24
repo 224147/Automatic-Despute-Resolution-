@@ -7,9 +7,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e ".[dev]"
+COPY app/ ./app/
+COPY scripts/ ./scripts/
+RUN pip install --no-cache-dir .
 
-COPY . .
+COPY documents/ ./documents/
+COPY data/ ./data/
+COPY alembic.ini ./
 
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
