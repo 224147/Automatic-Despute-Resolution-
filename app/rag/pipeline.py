@@ -83,7 +83,7 @@ def _load_documents(docs_dir: str) -> list:
     """Load PDF, DOCX, MD, TXT documents from a directory."""
     from langchain_core.documents import Document
 
-    documents = []
+    documents: list[Document] = []
     docs_path = Path(docs_dir)
     if not docs_path.exists():
         logger.warning("documents_dir_not_found", path=docs_dir)

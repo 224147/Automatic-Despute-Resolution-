@@ -451,7 +451,7 @@ async def escalation_node(state: DisputeState, db) -> dict:
 
     sla = 24 if priority in ("HIGH", "CRITICAL") else 48
 
-    esc = await escalate_dispute(db, dispute_id, reason, priority, team, sla)
+    esc = await escalate_dispute(db, dispute_id, reason or "", priority, team, sla)
 
     await log_audit_event(
         db,
