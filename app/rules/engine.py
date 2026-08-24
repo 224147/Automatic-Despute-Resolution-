@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from app.core.enums import DisputeCategory, RiskLevel, TransactionStatus
 from app.core.logging import get_logger
-from app.schemas.schemas import ClassificationResult, RiskResult, RuleResult
+from app.schemas.schemas import RuleResult
 
 logger = get_logger(__name__)
 

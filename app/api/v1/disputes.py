@@ -16,7 +16,7 @@ from app.schemas.schemas import (
     DisputeResponse,
     DisputeStatusResponse,
 )
-from app.security.auth import get_current_user, require_roles
+from app.security.auth import get_current_user
 from app.services.classification import classify_dispute
 from app.services.dispute import run_dispute_workflow
 

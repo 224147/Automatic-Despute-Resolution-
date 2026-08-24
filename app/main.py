@@ -1,7 +1,6 @@
 """FastAPI application entry point."""
 from __future__ import annotations
 
-import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response

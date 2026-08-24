@@ -3,19 +3,17 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.config import Settings, get_settings
 from app.models.models import (
     Account,
     Base,
     Card,
     Customer,
-    Dispute,
     Transaction,
 )
 from app.security.auth import hash_password
@@ -92,7 +90,7 @@ async def sample_transaction(db: AsyncSession, sample_account: Account) -> Trans
         status="FAILED",
         description="UPI payment to merchant",
         merchant="Test Merchant",
-        transaction_date=datetime.now(timezone.utc),
+        transaction_date=datetime.now(UTC),
     )
     db.add(t)
     await db.flush()

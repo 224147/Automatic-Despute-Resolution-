@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, TypedDict
+from datetime import UTC, datetime
+from typing import TypedDict
 
 from app.core.enums import (
     ActorType,
     AuditEventType,
     DisputeCategory,
-    DisputePriority,
     DisputeStatus,
     EscalationReason,
     RiskLevel,
@@ -157,7 +156,7 @@ async def identify_transaction_node(state: DisputeState, db) -> dict:
     if txn_ref:
         txn = await get_transaction_by_ref(db, txn_ref)
         if txn:
-            age = (datetime.now(timezone.utc) - txn.transaction_date).days
+            age = (datetime.now(UTC) - txn.transaction_date).days
             audit_events.append(f"TXN_FOUND: {txn.id} via ref {txn_ref}")
             return {
                 "transaction_id": str(txn.id),
@@ -174,7 +173,7 @@ async def identify_transaction_node(state: DisputeState, db) -> dict:
         amount = state.get("transaction_amount")
         for txn in txns:
             if amount and abs(txn.amount - amount) < 1.0 and txn.status in ("FAILED", "PENDING", "REVERSED"):
-                age = (datetime.now(timezone.utc) - txn.transaction_date).days
+                age = (datetime.now(UTC) - txn.transaction_date).days
                 audit_events.append(f"TXN_MATCHED: {txn.id}")
                 return {
                     "transaction_id": str(txn.id),
@@ -224,13 +223,17 @@ async def retrieve_policy_node(state: DisputeState, db) -> dict:
     logger.info("node_retrieve_policy", category=state.get("dispute_category"))
     audit_events = list(state.get("audit_events", []))
 
-    query = f"{state.get('dispute_category', '')} dispute policy for amount {state.get('transaction_amount', 'unknown')}"
+    category = state.get('dispute_category', '')
+    amount = state.get('transaction_amount', 'unknown')
+    query = f"{category} dispute policy for amount {amount}"
     rag_result = await retrieve_policies(query)
 
+    found_str = 'found' if rag_result.found else 'NOT FOUND'
+    desc = f"Policy retrieval: {found_str} ({len(rag_result.chunks)} chunks)"
     await log_audit_event(
         db,
         event_type=AuditEventType.POLICY_RETRIEVAL.value,
-        event_description=f"Policy retrieval: {'found' if rag_result.found else 'NOT FOUND'} ({len(rag_result.chunks)} chunks)",
+        event_description=desc,
         dispute_id=uuid.UUID(state["dispute_id"]) if state.get("dispute_id") else None,
         customer_id=uuid.UUID(state["customer_id"]),
     )
@@ -404,7 +407,7 @@ async def execute_safe_action_node(state: DisputeState, db) -> dict:
         db, dispute_id,
         status=DisputeStatus.AUTO_RESOLVED.value,
         resolution_summary=action_taken,
-        resolved_at=datetime.now(timezone.utc),
+        resolved_at=datetime.now(UTC),
     )
 
     await log_audit_event(

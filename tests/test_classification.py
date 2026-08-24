@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.services.classification import classify_dispute, _deterministic_classify
+from app.services.classification import _deterministic_classify, classify_dispute
 
 
 class TestDeterministicClassification:

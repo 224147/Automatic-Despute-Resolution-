@@ -2,22 +2,19 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.enums import (
     DisputeStatus,
-    EscalationReason,
     EscalationStatus,
     NotificationStatus,
-    NotificationType,
 )
 from app.core.logging import get_logger
 from app.models.models import (
     Account,
-    AuditLog,
     Card,
     Customer,
     Dispute,
@@ -29,7 +26,6 @@ from app.models.models import (
 )
 from app.schemas.schemas import (
     AccountResponse,
-    CardResponse,
     CustomerResponse,
     TransactionResponse,
 )
@@ -130,7 +126,7 @@ async def check_previous_disputes(db: AsyncSession, customer_id: uuid.UUID) -> l
 
 
 async def get_dispute_count_last_90_days(db: AsyncSession, customer_id: uuid.UUID) -> int:
-    ninety_days_ago = datetime.now(timezone.utc) - __import__("datetime").timedelta(days=90)
+    ninety_days_ago = datetime.now(UTC) - __import__("datetime").timedelta(days=90)
     result = await db.execute(
         select(func.count())
         .select_from(Dispute)
@@ -298,7 +294,7 @@ async def send_customer_notification(
         subject=subject,
         body=body,
         status=NotificationStatus.SENT.value,
-        sent_at=datetime.now(timezone.utc),
+        sent_at=datetime.now(UTC),
     )
     db.add(notif)
     await db.flush()

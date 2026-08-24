@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json as _json
 import uuid
 from datetime import datetime
 
@@ -16,7 +17,6 @@ from sqlalchemy import (
     types,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-import json as _json
 
 
 class _JSONType(types.TypeDecorator):

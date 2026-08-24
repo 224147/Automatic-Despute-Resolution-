@@ -5,7 +5,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.enums import ActorType, AuditEventType
+from app.core.enums import ActorType
 from app.core.logging import get_logger, request_id_var
 from app.models.models import AuditLog
 

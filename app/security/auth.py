@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -30,7 +30,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     settings = get_settings()
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=settings.jwt_access_token_expire_minutes)
     )
     to_encode.update({"exp": expire})

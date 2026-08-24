@@ -122,7 +122,7 @@ def main():
         "customer_message": "I don't recognize this Rs. 75000 card transaction on my account."
     })
     d = check("POST /disputes (unauthorized card)", r, 201)
-    dispute_id_3 = d.get("dispute_id")
+    _dispute_id_3 = d.get("dispute_id")
     print(f"    Category: {d.get('category')}, Status: {d.get('status')}")
     print(f"    Risk Level: {d.get('risk_level')}")
     print(f"    Response: {d.get('final_response', '')[:200]}")

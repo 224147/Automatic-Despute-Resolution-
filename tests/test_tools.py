@@ -4,10 +4,9 @@ from __future__ import annotations
 import uuid
 
 import pytest
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.models import Customer, Account, Transaction, Dispute
+from app.models.models import Account, Customer, Transaction
 from app.tools.banking import (
     authenticate_customer,
     check_previous_disputes,

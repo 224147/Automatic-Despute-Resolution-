@@ -1,8 +1,6 @@
 """Tests for risk assessment module."""
 from __future__ import annotations
 
-import pytest
-
 from app.services.risk import assess_risk
 
 

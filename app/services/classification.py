@@ -65,7 +65,8 @@ def _deterministic_classify(message: str) -> ClassificationResult | None:
     return None
 
 
-_CLASSIFICATION_PROMPT = """You are a banking dispute classifier. Classify the customer complaint into exactly one category.
+_CLASSIFICATION_PROMPT = """You are a banking dispute classifier.
+Classify the customer complaint into exactly one category.
 
 Categories:
 - UPI_FAILED: UPI transaction failed but amount debited

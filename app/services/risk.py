@@ -1,8 +1,6 @@
 """Risk/fraud assessment module – deterministic scoring, ML-ready interface."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 from app.core.enums import DisputeCategory, RiskLevel, TransactionType
 from app.core.logging import get_logger
 

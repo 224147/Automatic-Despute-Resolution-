@@ -1,8 +1,6 @@
 """Tests for the rules engine."""
 from __future__ import annotations
 
-import pytest
-
 from app.rules.engine import evaluate_rules
 
 

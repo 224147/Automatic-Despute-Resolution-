@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 
 
-class TransactionType(str, enum.Enum):
+class TransactionType(enum.StrEnum):
     UPI = "UPI"
     ATM = "ATM"
     CARD = "CARD"
@@ -15,7 +15,7 @@ class TransactionType(str, enum.Enum):
     OTHER = "OTHER"
 
 
-class TransactionStatus(str, enum.Enum):
+class TransactionStatus(enum.StrEnum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
     PENDING = "PENDING"
@@ -23,7 +23,7 @@ class TransactionStatus(str, enum.Enum):
     REFUNDED = "REFUNDED"
 
 
-class DisputeCategory(str, enum.Enum):
+class DisputeCategory(enum.StrEnum):
     UPI_FAILED = "UPI_FAILED"
     UPI_PENDING = "UPI_PENDING"
     ATM_CASH_NOT_RECEIVED = "ATM_CASH_NOT_RECEIVED"
@@ -37,7 +37,7 @@ class DisputeCategory(str, enum.Enum):
     UNKNOWN = "UNKNOWN"
 
 
-class DisputeStatus(str, enum.Enum):
+class DisputeStatus(enum.StrEnum):
     SUBMITTED = "SUBMITTED"
     UNDER_REVIEW = "UNDER_REVIEW"
     AWAITING_INFO = "AWAITING_INFO"
@@ -48,14 +48,14 @@ class DisputeStatus(str, enum.Enum):
     CLOSED = "CLOSED"
 
 
-class DisputePriority(str, enum.Enum):
+class DisputePriority(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
 
-class EscalationStatus(str, enum.Enum):
+class EscalationStatus(enum.StrEnum):
     OPEN = "OPEN"
     ASSIGNED = "ASSIGNED"
     IN_PROGRESS = "IN_PROGRESS"
@@ -63,7 +63,7 @@ class EscalationStatus(str, enum.Enum):
     CLOSED = "CLOSED"
 
 
-class EscalationReason(str, enum.Enum):
+class EscalationReason(enum.StrEnum):
     HIGH_RISK = "HIGH_RISK"
     FRAUD_SUSPECTED = "FRAUD_SUSPECTED"
     POLICY_NOT_FOUND = "POLICY_NOT_FOUND"
@@ -76,46 +76,46 @@ class EscalationReason(str, enum.Enum):
     SYSTEM_ERROR = "SYSTEM_ERROR"
 
 
-class RiskLevel(str, enum.Enum):
+class RiskLevel(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
 
-class UserRole(str, enum.Enum):
+class UserRole(enum.StrEnum):
     CUSTOMER = "CUSTOMER"
     SUPPORT_AGENT = "SUPPORT_AGENT"
     DISPUTE_MANAGER = "DISPUTE_MANAGER"
     ADMIN = "ADMIN"
 
 
-class NotificationType(str, enum.Enum):
+class NotificationType(enum.StrEnum):
     EMAIL = "EMAIL"
     SMS = "SMS"
     IN_APP = "IN_APP"
 
 
-class NotificationStatus(str, enum.Enum):
+class NotificationStatus(enum.StrEnum):
     PENDING = "PENDING"
     SENT = "SENT"
     FAILED = "FAILED"
 
 
-class AccountStatus(str, enum.Enum):
+class AccountStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     FROZEN = "FROZEN"
     CLOSED = "CLOSED"
 
 
-class CardStatus(str, enum.Enum):
+class CardStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     BLOCKED = "BLOCKED"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"
 
 
-class AuditEventType(str, enum.Enum):
+class AuditEventType(enum.StrEnum):
     AUTHENTICATION = "AUTHENTICATION"
     CLASSIFICATION = "CLASSIFICATION"
     TRANSACTION_LOOKUP = "TRANSACTION_LOOKUP"
@@ -131,7 +131,7 @@ class AuditEventType(str, enum.Enum):
     DISPUTE_UPDATED = "DISPUTE_UPDATED"
 
 
-class ActorType(str, enum.Enum):
+class ActorType(enum.StrEnum):
     SYSTEM = "SYSTEM"
     CUSTOMER = "CUSTOMER"
     AGENT = "AGENT"

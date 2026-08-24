@@ -1,14 +1,9 @@
 """Tests for Pydantic schemas – validation and masking."""
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
-
 import pytest
 
 from app.schemas.schemas import (
-    AccountResponse,
-    CardResponse,
     ClassificationResult,
     CustomerCreate,
     DisputeCreate,

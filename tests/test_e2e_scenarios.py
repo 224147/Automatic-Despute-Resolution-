@@ -2,16 +2,16 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.models import Account, Customer, Dispute, Transaction
+from app.models.models import Account, Customer, Transaction
+from app.rules.engine import evaluate_rules
 from app.security.auth import hash_password
 from app.services.classification import classify_dispute
-from app.rules.engine import evaluate_rules
 from app.services.risk import assess_risk
 
 
@@ -43,14 +43,14 @@ async def e2e_customer(db: AsyncSession) -> Customer:
         t = Transaction(
             id=uuid.uuid4(), account_id=acc.id, transaction_ref=txn_data[3],
             transaction_type=txn_data[0], amount=txn_data[1], status=txn_data[2],
-            description="E2E test transaction", transaction_date=datetime.now(timezone.utc),
+            description="E2E test transaction", transaction_date=datetime.now(UTC),
         )
         db.add(t)
     await db.flush()
     return c
 
 
-class TestScenario1_UPIFailed:
+class TestScenarioUpiFailed:
     """Customer: 'My UPI transaction failed but Rs. 500 was deducted.'"""
 
     @pytest.mark.asyncio
@@ -77,7 +77,7 @@ class TestScenario1_UPIFailed:
         assert result["risk_level"] == "LOW"
 
 
-class TestScenario2_ATM:
+class TestScenarioAtm:
     """Customer: 'ATM did not give me cash but Rs. 10,000 was deducted.'"""
 
     @pytest.mark.asyncio
@@ -94,7 +94,7 @@ class TestScenario2_ATM:
         assert result.eligible_for_auto_resolution
 
 
-class TestScenario3_UnauthorizedCard:
+class TestScenarioUnauthorizedCard:
     """Customer: 'I don't recognize this Rs. 75,000 card transaction.'"""
 
     @pytest.mark.asyncio
@@ -123,7 +123,7 @@ class TestScenario3_UnauthorizedCard:
         assert result["risk_level"] in ("HIGH", "CRITICAL")
 
 
-class TestScenario4_RefundNotReceived:
+class TestScenarioRefundNotReceived:
     """Customer: 'My refund has not arrived.'"""
 
     @pytest.mark.asyncio
@@ -141,7 +141,7 @@ class TestScenario4_RefundNotReceived:
         assert result.eligible_for_auto_resolution
 
 
-class TestScenario5_AuthFailed:
+class TestScenarioAuthFailed:
     """Customer cannot authenticate."""
 
     def test_rules_block_unverified(self):
@@ -155,7 +155,7 @@ class TestScenario5_AuthFailed:
         assert "CUSTOMER_NOT_VERIFIED" in result.reason_codes
 
 
-class TestScenario6_NoPolicyFound:
+class TestScenarioNoPolicyFound:
     """No applicable policy."""
 
     def test_rules_no_policy(self):

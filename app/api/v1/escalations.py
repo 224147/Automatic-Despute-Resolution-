@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.service import log_audit_event
-from app.core.enums import AuditEventType, EscalationStatus, DisputeStatus, UserRole
+from app.core.enums import AuditEventType, DisputeStatus, EscalationStatus, UserRole
 from app.database.session import get_db
 from app.models.models import Customer, Dispute, Escalation, Resolution
 from app.schemas.schemas import (
@@ -17,7 +17,7 @@ from app.schemas.schemas import (
     EscalationResolve,
     EscalationResponse,
 )
-from app.security.auth import get_current_user, require_roles
+from app.security.auth import require_roles
 
 router = APIRouter(prefix="/escalations", tags=["escalations"])
 
@@ -93,7 +93,7 @@ async def resolve_escalation(
 
     esc.status = EscalationStatus.RESOLVED.value
     esc.agent_notes = body.resolution_notes
-    esc.resolved_at = datetime.now(timezone.utc)
+    esc.resolved_at = datetime.now(UTC)
     await db.flush()
 
     # Update the dispute
@@ -102,7 +102,7 @@ async def resolve_escalation(
     if dispute:
         dispute.status = DisputeStatus.RESOLVED.value
         dispute.resolution_summary = body.resolution_notes
-        dispute.resolved_at = datetime.now(timezone.utc)
+        dispute.resolved_at = datetime.now(UTC)
 
     # Create resolution record
     resolution = Resolution(

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-import os
 from pathlib import Path
 
 import numpy as np
@@ -134,8 +133,8 @@ def ingest_documents(docs_dir: str = "documents/policies") -> int:
     """Ingest documents, create chunks, build vector store, persist."""
     global _vector_store
 
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
     from langchain_community.vectorstores import FAISS
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
 
     settings = get_settings()
     documents = _load_documents(docs_dir)

@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import random
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,7 +52,11 @@ def _random_account_number() -> str:
 
 
 def _random_card_number() -> str:
-    return f"4{random.randint(100, 999)}{random.randint(1000, 9999)}{random.randint(1000, 9999)}{random.randint(1000, 9999)}"
+    p1 = random.randint(100, 999)
+    p2 = random.randint(1000, 9999)
+    p3 = random.randint(1000, 9999)
+    p4 = random.randint(1000, 9999)
+    return f"4{p1}{p2}{p3}{p4}"
 
 
 def _random_txn_ref(txn_type: str) -> str:
@@ -60,7 +64,7 @@ def _random_txn_ref(txn_type: str) -> str:
 
 
 async def seed(session: AsyncSession) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     customers: list[Customer] = []
     accounts: list[Account] = []
     cards: list[Card] = []
@@ -198,7 +202,9 @@ async def seed(session: AsyncSession) -> None:
         DisputeCategory.UPI_FAILED: "My UPI transaction failed but Rs. {amt} was deducted from my account.",
         DisputeCategory.UPI_PENDING: "My UPI payment of Rs. {amt} is still showing as pending since yesterday.",
         DisputeCategory.ATM_CASH_NOT_RECEIVED: "ATM did not dispense cash but Rs. {amt} was debited from my account.",
-        DisputeCategory.UNAUTHORIZED_CARD_TRANSACTION: "I see an unauthorized card transaction of Rs. {amt} that I did not make.",
+        DisputeCategory.UNAUTHORIZED_CARD_TRANSACTION: (
+            "I see an unauthorized card transaction of Rs. {amt} that I did not make."
+        ),
         DisputeCategory.CARD_PAYMENT_FAILED: "My card payment of Rs. {amt} failed but the amount was charged.",
         DisputeCategory.REFUND_NOT_RECEIVED: "I returned my order but the refund of Rs. {amt} has not been credited.",
         DisputeCategory.NEFT_RTGS_IMPS_ISSUE: "My NEFT transfer of Rs. {amt} failed but money was debited.",
@@ -220,8 +226,11 @@ async def seed(session: AsyncSession) -> None:
         session.add(d)
 
     await session.commit()
-    print(f"Seeded: {len(customers)} customers, {len(accounts)} accounts, "
-          f"{len(cards)} cards, {len(transactions)} transactions, {min(len(failed_txns), len(dispute_messages))} disputes")
+    n_disputes = min(len(failed_txns), len(dispute_messages))
+    print(
+        f"Seeded: {len(customers)} customers, {len(accounts)} accounts, "
+        f"{len(cards)} cards, {len(transactions)} transactions, {n_disputes} disputes"
+    )
 
 
 async def main() -> None:

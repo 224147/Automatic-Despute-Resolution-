@@ -4,12 +4,9 @@ from __future__ import annotations
 import uuid
 
 import pytest
-import pytest_asyncio
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.service import log_audit_event
-from app.models.models import AuditLog
 
 
 @pytest.mark.asyncio
