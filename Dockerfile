@@ -12,9 +12,11 @@ COPY scripts/ ./scripts/
 RUN pip install --no-cache-dir .
 
 COPY documents/ ./documents/
-COPY data/ ./data/
-COPY alembic.ini ./
 
+RUN mkdir -p data/vector_store
+RUN mkdir -p data/chroma
+
+COPY alembic.ini ./
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
