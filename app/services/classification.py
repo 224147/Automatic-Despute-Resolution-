@@ -118,7 +118,16 @@ _KEYWORD_RULES: list[tuple[DisputeCategory, list[str], str | None]] = [
     (DisputeCategory.LOAN_EMI_DISPUTE, ["loan", "deduct"], "LOAN_EMI"),
 ]
 
-FRAUD_KEYWORDS = {"unauthorized", "unauthorised", "fraud", "don't recognize", "do not recognize", "stolen", "hack", "suspicious"}
+FRAUD_KEYWORDS = {
+    "unauthorized",
+    "unauthorised",
+    "fraud",
+    "don't recognize",
+    "do not recognize",
+    "stolen",
+    "hack",
+    "suspicious",
+}
 
 # Map policy document names to dispute categories
 _POLICY_CATEGORY_MAP = {
