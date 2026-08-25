@@ -1,4 +1,9 @@
-"""Streamlit frontend for the Dispute Resolution System."""
+"""Streamlit frontend for the Dispute Resolution POC.
+
+Adapted from the original full-system frontend: this POC backend exposes a single
+POST /disputes endpoint and has no authentication, so login and the agent/escalation
+dashboard pages (which depended on removed endpoints) are dropped.
+"""
 from __future__ import annotations
 
 import os
@@ -6,207 +11,81 @@ import os
 import httpx
 import streamlit as st
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+API_BASE = os.getenv("API_BASE_URL", "http://localhost:8001")
 
-st.set_page_config(page_title="Bank Dispute Resolution", layout="wide")
-
-
-def get_headers():
-    token = st.session_state.get("token")
-    if token:
-        return {"Authorization": f"Bearer {token}"}
-    return {}
+st.set_page_config(page_title="Dispute Resolution POC", layout="centered")
 
 
-def login_page():
-    st.title("🏦 Bank Dispute Resolution System")
-    st.subheader("Login")
-
-    with st.form("login_form"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
-
-    if submitted and email and password:
-        try:
-            resp = httpx.post(
-                f"{API_BASE}/auth/login",
-                json={"email": email, "password": password},
-                timeout=10,
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                st.session_state["token"] = data["access_token"]
-                st.session_state["logged_in"] = True
-                st.rerun()
-            else:
-                st.error(f"Login failed: {resp.json().get('detail', 'Unknown error')}")
-        except httpx.ConnectError:
-            st.error("Cannot connect to backend. Is the server running?")
-
-
-def customer_chat():
-    st.subheader("📝 Submit a Dispute")
+def submit_dispute():
+    st.title("🏦 Automated Dispute Resolution — POC")
+    st.caption(
+        "Only `exact_duplicate` disputes under the configured threshold auto-resolve. Everything else escalates."
+    )
 
     with st.form("dispute_form"):
-        message = st.text_area(
-            "Describe your issue",
-            placeholder="e.g., My UPI transaction failed but Rs. 500 was deducted from my account.",
-            height=120,
+        customer_id = st.text_input("Customer ID", value="CUST-1")
+        transaction_id = st.text_input("Transaction ID", value="TXN-1")
+        st.caption("Seeded transactions: TXN-1 ($25.00), TXN-2 ($500.00)")
+        amount_usd = st.text_input("Amount (USD)", value="25.00")
+        description = st.text_area(
+            "Describe the issue",
+            value="I was charged twice for the same purchase.",
+            height=100,
         )
-        txn_ref = st.text_input("Transaction Reference (optional)")
         submitted = st.form_submit_button("Submit Dispute")
 
-    if submitted and message:
+    if submitted and customer_id and transaction_id and description:
         with st.spinner("Processing your dispute..."):
             try:
                 resp = httpx.post(
                     f"{API_BASE}/disputes",
-                    json={"customer_message": message, "transaction_ref": txn_ref or None},
-                    headers=get_headers(),
+                    json={
+                        "customer_id": customer_id,
+                        "transaction_id": transaction_id,
+                        "amount_usd": amount_usd,
+                        "description": description,
+                    },
                     timeout=60,
                 )
-                if resp.status_code == 201:
+                if resp.status_code == 200:
                     result = resp.json()
-                    if result.get("status") == "AUTO_RESOLVED":
-                        st.success(f"✅ {result.get('final_response', 'Dispute resolved!')}")
-                    else:
-                        st.warning(f"⏳ {result.get('final_response', 'Dispute escalated for review.')}")
 
-                    with st.expander("Dispute Details"):
+                    if not result["is_new_case"]:
+                        st.info(
+                            f"ℹ️ You already have an open case for this customer/transaction "
+                            f"(**{result['case_id']}**, amount **${result['amount_usd']}**). "
+                            f"That existing case was reused instead of creating a new one — the amount and "
+                            f"description you just entered were **not** applied. Use a different Customer ID "
+                            f"or Transaction ID to start a fresh case."
+                        )
+
+                    if result["decision"] == "auto_resolve":
+                        st.success(
+                            f"✅ Good news — we've reviewed your dispute and confirmed it as a duplicate charge. "
+                            f"A provisional credit of **${result['amount_usd']}** has been issued to your account.\n\n"
+                            f"**Reference number:** {result['case_id']}"
+                        )
+                        if result.get("rationale"):
+                            st.caption(f"Why: {result['rationale']}")
+                    else:
+                        st.warning(
+                            f"⏳ We've received your dispute and it's been passed to our review team for a closer "
+                            f"look. You'll hear back from us shortly.\n\n"
+                            f"**Reference number:** {result['case_id']}"
+                        )
+                        st.write("**Why it needs manual review:**")
+                        for reason in result["reasons"]:
+                            st.write(f"- {reason}")
+                        if result.get("rationale"):
+                            st.caption(f"Assistant's read on the case: {result['rationale']}")
+
+                    with st.expander("Full response (raw)"):
                         st.json(result)
                 else:
                     st.error(f"Error: {resp.json().get('detail', resp.text)}")
             except httpx.ConnectError:
-                st.error("Cannot connect to backend.")
-
-    # Classify only
-    st.divider()
-    st.subheader("🔍 Classify a Complaint (Preview)")
-    with st.form("classify_form"):
-        cls_message = st.text_area("Enter complaint to classify", height=80)
-        cls_submitted = st.form_submit_button("Classify")
-
-    if cls_submitted and cls_message:
-        try:
-            resp = httpx.post(
-                f"{API_BASE}/disputes/classify",
-                json={"customer_message": cls_message},
-                headers=get_headers(),
-                timeout=30,
-            )
-            if resp.status_code == 200:
-                st.json(resp.json())
-        except httpx.ConnectError:
-            st.error("Cannot connect to backend.")
-
-
-def dispute_history():
-    st.subheader("📋 Dispute History")
-    st.info("Enter a Dispute ID to check status.")
-
-    dispute_id = st.text_input("Dispute ID")
-    if st.button("Check Status") and dispute_id:
-        try:
-            resp = httpx.get(
-                f"{API_BASE}/disputes/{dispute_id}/status",
-                headers=get_headers(),
-                timeout=10,
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                cols = st.columns(3)
-                cols[0].metric("Status", data["status"])
-                cols[1].metric("Category", data["category"])
-                cols[2].metric("Priority", data["priority"])
-                if data.get("risk_level"):
-                    st.metric("Risk Level", data["risk_level"])
-                if data.get("resolution_summary"):
-                    st.success(f"Resolution: {data['resolution_summary']}")
-            else:
-                st.error("Dispute not found or not authorized.")
-        except httpx.ConnectError:
-            st.error("Cannot connect to backend.")
-
-
-def agent_dashboard():
-    st.subheader("🛡️ Agent Dashboard - Escalation Queue")
-
-    status_filter = st.selectbox("Filter by status", ["", "OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED"])
-    if st.button("Refresh"):
-        pass  # triggers rerun
-
-    try:
-        params = {"status_filter": status_filter} if status_filter else {}
-        resp = httpx.get(
-            f"{API_BASE}/escalations",
-            params=params,
-            headers=get_headers(),
-            timeout=10,
-        )
-        if resp.status_code == 200:
-            escalations = resp.json()
-            if not escalations:
-                st.info("No escalations found.")
-            for esc in escalations:
-                with st.expander(
-                    f"#{str(esc['id'])[:8]} | {esc['reason']} | Priority: {esc['priority']} | Status: {esc['status']}"
-                ):
-                    st.write(f"**Dispute ID:** {esc['dispute_id']}")
-                    st.write(f"**Team:** {esc.get('assigned_team', 'Unassigned')}")
-                    st.write(f"**SLA:** {esc['sla_hours']} hours")
-                    st.write(f"**Created:** {esc['created_at']}")
-                    if esc.get("agent_notes"):
-                        st.write(f"**Notes:** {esc['agent_notes']}")
-
-                    # Resolve form
-                    with st.form(f"resolve_{esc['id']}"):
-                        notes = st.text_area("Resolution notes", key=f"notes_{esc['id']}")
-                        refund = st.number_input("Refund amount (optional)", min_value=0.0, key=f"refund_{esc['id']}")
-                        if st.form_submit_button("Resolve"):
-                            resolve_resp = httpx.post(
-                                f"{API_BASE}/escalations/{esc['id']}/resolve",
-                                json={
-                                    "resolution_notes": notes,
-                                    "refund_amount": refund if refund > 0 else None,
-                                },
-                                headers=get_headers(),
-                                timeout=10,
-                            )
-                            if resolve_resp.status_code == 200:
-                                st.success("Escalation resolved!")
-                                st.rerun()
-                            else:
-                                st.error(f"Error: {resolve_resp.text}")
-        elif resp.status_code == 403:
-            st.error("Access denied. Agent role required.")
-        else:
-            st.error("Failed to load escalations.")
-    except httpx.ConnectError:
-        st.error("Cannot connect to backend.")
-
-
-def main():
-    if not st.session_state.get("logged_in"):
-        login_page()
-        return
-
-    st.sidebar.title("🏦 Navigation")
-    if st.sidebar.button("Logout"):
-        st.session_state.clear()
-        st.rerun()
-
-    page = st.sidebar.radio("Go to", ["Submit Dispute", "Dispute History", "Agent Dashboard"])
-
-    st.title("🏦 Bank Dispute Resolution System")
-
-    if page == "Submit Dispute":
-        customer_chat()
-    elif page == "Dispute History":
-        dispute_history()
-    elif page == "Agent Dashboard":
-        agent_dashboard()
+                st.error(f"Cannot connect to backend at {API_BASE}. Is `uvicorn api:app` running?")
 
 
 if __name__ == "__main__":
-    main()
+    submit_dispute()

@@ -53,3 +53,4 @@ Thumbs.db
 frontend/node_modules/
 frontend/build/
 frontend/dist/
+audit_log.jsonl
