@@ -18,15 +18,29 @@ def _extract_amount(message: str) -> float | None:
     """Try to extract a monetary amount from the customer message."""
     patterns = [
         r"(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d+)?)",
-        r"([\d,]+(?:\.\d+)?)\s*(?:rupees|rs|inr)",
+        r"([\d,]+(?:\.\d+)?)\s*(?:rupees|rupay|rs|inr)",
+        r"(?:amount|sum|value)\s*(?:of|is|was)?\s*(?:Rs\.?|INR|₹)?\s*([\d,]+(?:\.\d+)?)",
+        r"([\d,]+(?:\.\d+)?)\s*(?:was|got|been)\s*(?:debit|deduct|charge)",
     ]
     for pattern in patterns:
         match = re.search(pattern, message, re.IGNORECASE)
         if match:
             try:
-                return float(match.group(1).replace(",", ""))
-            except ValueError:
+                val = match.group(match.lastindex).replace(",", "")
+                amount = float(val)
+                if amount > 0:
+                    return amount
+            except (ValueError, IndexError):
                 continue
+    # Fallback: find any number >= 100 that looks like a monetary value
+    numbers = re.findall(r"\b([\d,]+(?:\.\d+)?)\b", message)
+    for n in numbers:
+        try:
+            val = float(n.replace(",", ""))
+            if val >= 100:
+                return val
+        except ValueError:
+            continue
     return None
 
 

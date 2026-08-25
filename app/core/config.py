@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # LLM
     llm_provider: str = "openai"
     openai_api_key: str = ""
+    groq_api_key: str = ""
     llm_model: str = "gpt-4o-mini"
     llm_temperature: float = 0.0
 

@@ -39,11 +39,8 @@ def _route_after_auth(state: DisputeState) -> str:
 
 def _route_after_identify(state: DisputeState) -> str:
     if not state.get("transaction_verified", False) and not state.get("transaction_id"):
-        # Non-transaction disputes (wrong charge, billing) can proceed
-        category = state.get("dispute_category", "")
-        if category in ("WRONG_BANK_CHARGE", "CREDIT_CARD_BILLING_DISPUTE", "LOAN_EMI_DISPUTE"):
-            return "retrieve_policy_node"
-        return "escalation_node"
+        # Proceed to policy retrieval even without a matched transaction
+        return "retrieve_policy_node"
     return "verify_transaction_node"
 
 

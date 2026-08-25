@@ -6,6 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
+from langchain_core.embeddings import Embeddings
+
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.schemas.schemas import PolicyChunk, RAGResponse
@@ -16,7 +18,7 @@ _vector_store = None
 _embeddings = None
 
 
-class _SimpleHashEmbeddings:
+class _SimpleHashEmbeddings(Embeddings):
     """Deterministic hash-based embeddings – zero external downloads required.
     Good enough for keyword-overlap retrieval on a small policy corpus."""
 
@@ -39,6 +41,9 @@ class _SimpleHashEmbeddings:
         return [self._hash_embed(t) for t in texts]
 
     def embed_query(self, text: str) -> list[float]:
+        return self._hash_embed(text)
+
+    def __call__(self, text: str) -> list[float]:
         return self._hash_embed(text)
 
 

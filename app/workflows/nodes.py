@@ -125,13 +125,17 @@ async def authenticate_customer_node(state: DisputeState, db) -> dict:
     from app.audit.service import log_audit_event
     from app.tools.banking import authenticate_customer
 
+    from sqlalchemy import select as sa_select
+    from app.models.models import Customer as CustomerModel
+
     logger.info("node_authenticate", customer_id=state.get("customer_id"))
     audit_events = list(state.get("audit_events", []))
 
-    # In production, this would use OTP/biometrics. Mock uses verification_code.
-    verified = await authenticate_customer(
-        db, uuid.UUID(state["customer_id"]), "1234"  # Mock code
-    )
+    # Customer is already JWT-authenticated via the API; confirm active in DB
+    cid = uuid.UUID(state["customer_id"])
+    res = await db.execute(sa_select(CustomerModel).where(CustomerModel.id == cid))
+    cust = res.scalar_one_or_none()
+    verified = cust is not None and cust.is_active
 
     await log_audit_event(
         db,
@@ -169,9 +173,11 @@ async def identify_transaction_node(state: DisputeState, db) -> dict:
 
     # If no ref, try to find matching transaction from customer history
     if state.get("customer_id"):
-        txns = await get_customer_transactions(db, uuid.UUID(state["customer_id"]), limit=20)
+        txns = await get_customer_transactions(db, uuid.UUID(state["customer_id"]), limit=50)
         amount = state.get("transaction_amount")
+        txn_type = state.get("transaction_type")
         for txn in txns:
+            # Match by amount + failed status
             if amount and abs(txn.amount - amount) < 1.0 and txn.status in ("FAILED", "PENDING", "REVERSED"):
                 age = (datetime.now(UTC) - txn.transaction_date).days
                 audit_events.append(f"TXN_MATCHED: {txn.id}")
@@ -183,6 +189,20 @@ async def identify_transaction_node(state: DisputeState, db) -> dict:
                     "transaction_verified": True,
                     "audit_events": audit_events,
                 }
+        # Fallback: match by transaction type + failed status
+        if txn_type:
+            for txn in txns:
+                if txn.transaction_type == txn_type and txn.status in ("FAILED", "PENDING", "REVERSED"):
+                    age = (datetime.now(UTC) - txn.transaction_date).days
+                    audit_events.append(f"TXN_MATCHED_BY_TYPE: {txn.id}")
+                    return {
+                        "transaction_id": str(txn.id),
+                        "transaction_status": txn.status,
+                        "transaction_amount": txn.amount,
+                        "transaction_age_days": age,
+                        "transaction_verified": True,
+                        "audit_events": audit_events,
+                    }
 
     audit_events.append("TXN_NOT_FOUND")
     return {
@@ -394,14 +414,22 @@ async def execute_safe_action_node(state: DisputeState, db) -> dict:
 
     dispute_id = uuid.UUID(state["dispute_id"])
     amount = state.get("transaction_amount") or 0
+    if amount == 0:
+        logger.warning("execute_action_zero_amount", dispute_id=str(dispute_id))
     action = state.get("rule_result", {}).get("recommended_action", "AUTO_REFUND")
 
     if action in ("AUTO_REFUND", "AUTO_CREDIT", "REFUND_WITH_VERIFICATION"):
         resolution = await create_refund_request(db, dispute_id, amount)
-        action_taken = f"Refund of INR {amount:,.2f} initiated"
+        if amount > 0:
+            action_taken = f"Refund of INR {amount:,.2f} initiated"
+        else:
+            action_taken = "Refund initiated (amount will be confirmed after transaction verification)"
     else:
         resolution = await create_provisional_credit_request(db, dispute_id, amount)
-        action_taken = f"Provisional credit of INR {amount:,.2f} applied"
+        if amount > 0:
+            action_taken = f"Provisional credit of INR {amount:,.2f} applied"
+        else:
+            action_taken = "Provisional credit applied (amount will be confirmed after transaction verification)"
 
     await update_dispute(
         db, dispute_id,
