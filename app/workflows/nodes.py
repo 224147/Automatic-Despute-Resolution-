@@ -122,10 +122,9 @@ async def classify_dispute_node(state: DisputeState, db) -> dict:
 
 async def authenticate_customer_node(state: DisputeState, db) -> dict:
     """Verify the customer identity."""
-    from app.audit.service import log_audit_event
-    from app.tools.banking import authenticate_customer
-
     from sqlalchemy import select as sa_select
+
+    from app.audit.service import log_audit_event
     from app.models.models import Customer as CustomerModel
 
     logger.info("node_authenticate", customer_id=state.get("customer_id"))
