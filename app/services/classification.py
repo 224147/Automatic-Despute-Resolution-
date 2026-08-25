@@ -88,6 +88,14 @@ _KEYWORD_RULES: list[tuple[DisputeCategory, list[str], str | None]] = [
     (DisputeCategory.CREDIT_CARD_BILLING_DISPUTE, ["credit card", "wrong"], "CREDIT_CARD"),
     (DisputeCategory.CREDIT_CARD_BILLING_DISPUTE, ["credit card", "overcharg"], "CREDIT_CARD"),
     (DisputeCategory.CREDIT_CARD_BILLING_DISPUTE, ["credit card", "dispute"], "CREDIT_CARD"),
+    # Loan EMI
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["loan", "emi"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "twice"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "double"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "extra"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "wrong"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "incorrect"], "LOAN_EMI"),
+    (DisputeCategory.LOAN_EMI_DISPUTE, ["loan", "deduct"], "LOAN_EMI"),
     # Wrong bank charge
     (DisputeCategory.WRONG_BANK_CHARGE, ["wrong", "charge"], None),
     (DisputeCategory.WRONG_BANK_CHARGE, ["wrong", "fee"], None),
@@ -108,14 +116,6 @@ _KEYWORD_RULES: list[tuple[DisputeCategory, list[str], str | None]] = [
     (DisputeCategory.WRONG_BANK_CHARGE, ["duplicate", "deduct"], None),
     (DisputeCategory.WRONG_BANK_CHARGE, ["debited", "twice"], None),
     (DisputeCategory.WRONG_BANK_CHARGE, ["deducted", "twice"], None),
-    # Loan EMI
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["loan", "emi"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "twice"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "double"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "extra"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "wrong"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["emi", "incorrect"], "LOAN_EMI"),
-    (DisputeCategory.LOAN_EMI_DISPUTE, ["loan", "deduct"], "LOAN_EMI"),
 ]
 
 FRAUD_KEYWORDS = {
