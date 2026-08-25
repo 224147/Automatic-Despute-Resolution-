@@ -5,7 +5,6 @@ import hashlib
 from pathlib import Path
 
 import numpy as np
-
 from langchain_core.embeddings import Embeddings
 
 from app.core.config import get_settings
