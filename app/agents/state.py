@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
-from langgraph.graph import add_messages
 from langchain_core.messages import BaseMessage
+from langgraph.graph import add_messages
 
 
 def _replace_list(left: list, right: list) -> list:
