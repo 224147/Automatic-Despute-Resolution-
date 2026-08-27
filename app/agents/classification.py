@@ -37,8 +37,11 @@ After analyzing, you MUST return a JSON summary of your findings.
 
 async def classification_agent_node(state: DisputeState, db) -> dict:
     """Classify the dispute and create the dispute record."""
-    from app.agents.tools import classify_dispute_tool, retrieve_policies_tool
-    from app.agents.tools import create_db_bound_tools
+    from app.agents.tools import (
+    classify_dispute_tool,
+    create_db_bound_tools,
+    retrieve_policies_tool,
+)
     from app.audit.service import log_audit_event
     from app.core.enums import AuditEventType
 
