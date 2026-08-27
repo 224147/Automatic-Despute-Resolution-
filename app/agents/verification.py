@@ -112,7 +112,11 @@ async def verification_agent_node(state: DisputeState, db) -> dict:
     prev_count = history_data.get("dispute_count_90_days", 0)
 
     # Step 4: LLM reasoning (optional — works without it)
-    reasoning_text = f"Customer {'verified' if customer_verified else 'NOT verified'}, transaction {'found' if txn_result['transaction_verified'] else 'not found'}"
+    reasoning_text = (
+    f"Customer {'verified' if customer_verified else 'NOT verified'}, "
+    f"transaction "
+    f"{'found' if txn_result['transaction_verified'] else 'not found'}"
+    )
     try:
         llm = get_llm()
         reasoning = await llm.ainvoke([
