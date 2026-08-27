@@ -51,7 +51,11 @@ async def escalation_agent_node(state: DisputeState, db) -> dict:
     sla = 24 if priority in ("HIGH", "CRITICAL") else 48
 
     # LLM generates a summary for the human agent (optional — works without it)
-    summary_text = f"Escalated to {team}: {reason}. Category: {state.get('dispute_category', 'UNKNOWN')}, Amount: {state.get('transaction_amount', 'N/A')}, Risk: {risk_level}"
+    escalation_reason = (
+    f"Category: {state.get('dispute_category', 'UNKNOWN')}, "
+    f"Amount: {state.get('transaction_amount', 'N/A')}, "
+    f"Risk: {risk_level}"
+)
     try:
         llm = get_llm()
         summary_response = await llm.ainvoke([
