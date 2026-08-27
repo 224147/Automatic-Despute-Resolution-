@@ -57,9 +57,9 @@ async def supervisor_node(state: DisputeState) -> dict:
     """Decide which agent to call next. Tries LLM, falls back to deterministic routing."""
     # Try LLM-based routing first
     try:
-        from app.agents.llm import get_llm
         from langchain_core.messages import HumanMessage, SystemMessage
 
+        from app.agents.llm import get_llm
         llm = get_llm()
         risk_level = state.get("risk_result", {}).get("risk_level", "")
 
