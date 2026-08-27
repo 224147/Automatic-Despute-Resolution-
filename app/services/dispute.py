@@ -6,10 +6,10 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agents.state import DisputeState
 from app.core.logging import get_logger
 from app.tools.banking import get_customer
 from app.workflows.graph import build_dispute_graph
-from app.agents.state import DisputeState
 
 logger = get_logger(__name__)
 
