@@ -60,13 +60,20 @@ async def resolution_agent_node(state: DisputeState, db) -> dict:
     await log_audit_event(
         db,
         event_type=AuditEventType.RULE_EVALUATION.value,
-        event_description=f"Resolution Agent: rules={rule_result.get('recommended_action')}, eligible={rule_result.get('eligible_for_auto_resolution')}",
+        event_description=(
+    f"Resolution Agent: "
+    f"rules={rule_result.get('recommended_action')}, "
+    f"eligible={rule_result.get('eligible_for_auto_resolution')}"
+),
         dispute_id=uuid.UUID(state["dispute_id"]) if state.get("dispute_id") else None,
         customer_id=uuid.UUID(state["customer_id"]),
         new_state=rule_result,
         decision_reason=", ".join(rule_result.get("reason_codes", [])),
     )
-    audit_events.append(f"RULES: {rule_result.get('recommended_action')} (eligible={rule_result.get('eligible_for_auto_resolution')})")
+    audit_events.append(
+    f"RULES: {rule_result.get('recommended_action')} "
+    f"(eligible={rule_result.get('eligible_for_auto_resolution')})"
+)
 
     # Step 2: Assess risk
     risk_json = await assess_risk_tool.ainvoke({
