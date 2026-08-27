@@ -5,13 +5,13 @@ from functools import partial
 
 from langgraph.graph import END, StateGraph
 
+from app.agents.classification import classification_agent_node
+from app.agents.escalation import escalation_agent_node
+from app.agents.execution import execution_agent_node
+from app.agents.resolution import resolution_agent_node
 from app.agents.state import DisputeState
 from app.agents.supervisor import supervisor_node
-from app.agents.classification import classification_agent_node
 from app.agents.verification import verification_agent_node
-from app.agents.resolution import resolution_agent_node
-from app.agents.execution import execution_agent_node
-from app.agents.escalation import escalation_agent_node
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
