@@ -93,8 +93,9 @@ def assess_risk_tool(
     transaction_age_days: str = "",
 ) -> str:
     """Assess the risk/fraud level of a dispute. Returns risk score and level."""
-    from app.services.risk import assess_risk
     import json
+
+    from app.services.risk import assess_risk
     result = assess_risk(
         amount=float(amount) if amount else 0,
         transaction_type=transaction_type or None,
@@ -116,6 +117,7 @@ def create_db_bound_tools(db):
     async def lookup_customer(customer_id: str) -> str:
         """Look up a customer by ID to verify they exist and are active."""
         from sqlalchemy import select as sa_select
+
         from app.models.models import Customer as CustomerModel
         cid = uuid.UUID(customer_id)
         res = await db.execute(sa_select(CustomerModel).where(CustomerModel.id == cid))
@@ -182,7 +184,6 @@ def create_db_bound_tools(db):
     async def create_dispute(customer_id: str, customer_message: str, category: str, transaction_id: str = "") -> str:
         """Create a new dispute record in the system."""
         from app.tools.banking import create_dispute as _create
-        from app.core.enums import DisputeCategory
         dispute = await _create(
             db,
             customer_id=uuid.UUID(customer_id),
@@ -245,8 +246,9 @@ def create_db_bound_tools(db):
         customer_id: str, customer_name: str, dispute_id: str, template_name: str, extra_vars: str = "{}"
     ) -> str:
         """Send a notification to the customer using a template."""
-        from app.notifications.service import notify_customer
         import json as _json
+
+        from app.notifications.service import notify_customer
         await notify_customer(
             db,
             customer_id=uuid.UUID(customer_id),
