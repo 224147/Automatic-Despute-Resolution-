@@ -1,121 +1,101 @@
-"""LangGraph graph builder – wires nodes with conditional edges."""
+"""LangGraph multi-agent graph — supervisor routes between specialist agents."""
 from __future__ import annotations
 
 from functools import partial
 
 from langgraph.graph import END, StateGraph
 
-from app.workflows.nodes import (
-    DisputeState,
-    assess_risk_node,
-    audit_node,
-    authenticate_customer_node,
-    classify_dispute_node,
-    escalation_node,
-    evaluate_rules_node,
-    execute_safe_action_node,
-    identify_transaction_node,
-    intake_node,
-    notification_node,
-    resolution_decision_node,
-    retrieve_policy_node,
-    verify_transaction_node,
-)
+from app.agents.state import DisputeState
+from app.agents.supervisor import supervisor_node
+from app.agents.classification import classification_agent_node
+from app.agents.verification import verification_agent_node
+from app.agents.resolution import resolution_agent_node
+from app.agents.execution import execution_agent_node
+from app.agents.escalation import escalation_agent_node
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
+MAX_SUPERVISOR_LOOPS = 10
 
 
-def _route_after_classify(state: DisputeState) -> str:
-    if state.get("classification_confidence", 0) < 0.5:
-        return "escalation_node"
-    if state.get("dispute_category") == "UNKNOWN":
-        return "escalation_node"
-    return "authenticate_customer_node"
+def _route_supervisor(state: DisputeState) -> str:
+    """Route based on supervisor's decision."""
+    next_agent = state.get("next_agent", "FINISH")
+    if next_agent == "FINISH":
+        return END
+    return next_agent
 
 
-def _route_after_auth(state: DisputeState) -> str:
-    if not state.get("customer_verified", False):
-        return "escalation_node"
-    return "identify_transaction_node"
-
-
-def _route_after_identify(state: DisputeState) -> str:
-    if not state.get("transaction_verified", False) and not state.get("transaction_id"):
-        # Proceed to policy retrieval even without a matched transaction
-        return "retrieve_policy_node"
-    return "verify_transaction_node"
-
-
-def _route_after_decision(state: DisputeState) -> str:
-    if state.get("resolution_decision") == "AUTO_RESOLVE":
-        return "execute_safe_action_node"
-    return "escalation_node"
-
-
-def build_dispute_graph(db_session) -> StateGraph:
-    """Build the compiled LangGraph workflow, binding db to every node."""
+def build_dispute_graph(db_session):
+    """Build the compiled multi-agent LangGraph workflow."""
 
     graph = StateGraph(DisputeState)
 
-    # Bind db session to each node
-    graph.add_node("intake_node", partial(_wrap, intake_node, db_session))
-    graph.add_node("classify_dispute_node", partial(_wrap, classify_dispute_node, db_session))
-    graph.add_node("authenticate_customer_node", partial(_wrap, authenticate_customer_node, db_session))
-    graph.add_node("identify_transaction_node", partial(_wrap, identify_transaction_node, db_session))
-    graph.add_node("verify_transaction_node", partial(_wrap, verify_transaction_node, db_session))
-    graph.add_node("retrieve_policy_node", partial(_wrap, retrieve_policy_node, db_session))
-    graph.add_node("evaluate_rules_node", partial(_wrap, evaluate_rules_node, db_session))
-    graph.add_node("assess_risk_node", partial(_wrap, assess_risk_node, db_session))
-    graph.add_node("resolution_decision_node", partial(_wrap, resolution_decision_node, db_session))
-    graph.add_node("execute_safe_action_node", partial(_wrap, execute_safe_action_node, db_session))
-    graph.add_node("escalation_node", partial(_wrap, escalation_node, db_session))
-    graph.add_node("notification_node", partial(_wrap, notification_node, db_session))
-    graph.add_node("audit_node", partial(_wrap, audit_node, db_session))
+    # Supervisor node (no db needed — pure LLM routing)
+    graph.add_node("supervisor", _wrap_supervisor(supervisor_node))
 
-    # Edges
-    graph.set_entry_point("intake_node")
-    graph.add_edge("intake_node", "classify_dispute_node")
+    # Specialist agent nodes (each gets db session)
+    graph.add_node("classification_agent", partial(_wrap_agent, classification_agent_node, db_session))
+    graph.add_node("verification_agent", partial(_wrap_agent, verification_agent_node, db_session))
+    graph.add_node("resolution_agent", partial(_wrap_agent, resolution_agent_node, db_session))
+    graph.add_node("execution_agent", partial(_wrap_agent, execution_agent_node, db_session))
+    graph.add_node("escalation_agent", partial(_wrap_agent, escalation_agent_node, db_session))
 
-    graph.add_conditional_edges("classify_dispute_node", _route_after_classify, {
-        "authenticate_customer_node": "authenticate_customer_node",
-        "escalation_node": "escalation_node",
+    # Entry: supervisor decides first
+    graph.set_entry_point("supervisor")
+
+    # Supervisor routes to the appropriate agent (or END)
+    graph.add_conditional_edges("supervisor", _route_supervisor, {
+        "classification_agent": "classification_agent",
+        "verification_agent": "verification_agent",
+        "resolution_agent": "resolution_agent",
+        "execution_agent": "execution_agent",
+        "escalation_agent": "escalation_agent",
+        END: END,
     })
 
-    graph.add_conditional_edges("authenticate_customer_node", _route_after_auth, {
-        "identify_transaction_node": "identify_transaction_node",
-        "escalation_node": "escalation_node",
-    })
-
-    graph.add_conditional_edges("identify_transaction_node", _route_after_identify, {
-        "verify_transaction_node": "verify_transaction_node",
-        "retrieve_policy_node": "retrieve_policy_node",
-        "escalation_node": "escalation_node",
-    })
-
-    graph.add_edge("verify_transaction_node", "retrieve_policy_node")
-    graph.add_edge("retrieve_policy_node", "evaluate_rules_node")
-    graph.add_edge("evaluate_rules_node", "assess_risk_node")
-    graph.add_edge("assess_risk_node", "resolution_decision_node")
-
-    graph.add_conditional_edges("resolution_decision_node", _route_after_decision, {
-        "execute_safe_action_node": "execute_safe_action_node",
-        "escalation_node": "escalation_node",
-    })
-
-    graph.add_edge("execute_safe_action_node", "notification_node")
-    graph.add_edge("escalation_node", "notification_node")
-    graph.add_edge("notification_node", "audit_node")
-    graph.add_edge("audit_node", END)
+    # Every agent returns to supervisor for next decision
+    for agent_name in [
+        "classification_agent",
+        "verification_agent",
+        "resolution_agent",
+        "execution_agent",
+        "escalation_agent",
+    ]:
+        graph.add_edge(agent_name, "supervisor")
 
     return graph.compile()
 
 
-async def _wrap(node_fn, db, state: DisputeState) -> dict:
-    """Wrapper that passes db to node functions and handles errors."""
+def _wrap_supervisor(supervisor_fn):
+    """Wrap supervisor with loop detection."""
+    call_count = 0
+
+    async def wrapped(state: DisputeState) -> dict:
+        nonlocal call_count
+        call_count += 1
+        if call_count > MAX_SUPERVISOR_LOOPS:
+            logger.warning("supervisor_loop_limit", count=call_count)
+            return {"next_agent": "FINISH", "final_response": state.get("final_response", "Processing complete.")}
+        # If a terminal agent already set final_response, we're done
+        if state.get("final_response"):
+            return {"next_agent": "FINISH"}
+        try:
+            return await supervisor_fn(state)
+        except Exception as e:
+            logger.error("supervisor_error", error=str(e))
+            return {"next_agent": "FINISH", "final_response": f"An error occurred: {str(e)}"}
+
+    return wrapped
+
+
+async def _wrap_agent(agent_fn, db, state: DisputeState) -> dict:
+    """Wrapper that passes db to agent functions and handles errors."""
     try:
-        return await node_fn(state, db)
+        return await agent_fn(state, db)
     except Exception as e:
-        from app.core.logging import get_logger
-        logger = get_logger("workflow")
-        logger.error("node_error", node=node_fn.__name__, error=str(e))
+        logger.error("agent_error", agent=agent_fn.__name__, error=str(e))
         errors = list(state.get("errors", []))
-        errors.append(f"{node_fn.__name__}: {str(e)}")
+        errors.append(f"{agent_fn.__name__}: {str(e)}")
         return {"errors": errors, "final_response": f"An error occurred during processing: {str(e)}"}
