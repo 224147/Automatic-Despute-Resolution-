@@ -1,8 +1,6 @@
 """Shared LLM factory for all agents."""
 from __future__ import annotations
 
-from functools import lru_cache
-
 from langchain_core.language_models import BaseChatModel
 
 from app.core.config import get_settings
