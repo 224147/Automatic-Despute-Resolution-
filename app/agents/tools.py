@@ -1,5 +1,5 @@
 """LangChain tool wrappers — expose banking services as tools agents can call."""
-"""LangChain tool wrappers — expose banking services as tools agents can call."""
+"""LangChain tool wrappers - expose banking services as tools agents can call."""
 
 from __future__ import annotations
 
@@ -7,9 +7,6 @@ import uuid
 from datetime import UTC, datetime
 
 from langchain_core.tools import tool
-
-from app.services.banking import BankingService
-
 
 # ── Classification Tools ──
 
