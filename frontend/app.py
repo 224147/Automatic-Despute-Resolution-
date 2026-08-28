@@ -105,7 +105,7 @@ def dispute_history():
     st.subheader("📋 Dispute History")
     st.info("Enter a Dispute ID to check status.")
 
-    dispute_id = st.text_input("Dispute ID")
+    dispute_id = st.text_input("Dispute ID", value=st.query_params.get("dispute_id", ""))
     if st.button("Check Status") and dispute_id:
         try:
             resp = httpx.get(

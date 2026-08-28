@@ -7,16 +7,15 @@ interface NotifyDisputePayload {
   responseText: string;
 }
 
-const NOTIFY_TO = process.env.NOTIFY_TO || "rohitraj776407@gmail.com";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-
 export async function notifyDisputeResponse({
   customerId,
   customerName,
   disputeId,
   responseText,
 }: NotifyDisputePayload) {
-  const disputeLink = `${FRONTEND_URL}/disputes/${disputeId}`;
+  const NOTIFY_TO = process.env.NOTIFY_TO || "rohitraj776407@gmail.com";
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+  const disputeLink = `${FRONTEND_URL}/?dispute_id=${disputeId}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; color: #222;">

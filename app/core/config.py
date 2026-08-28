@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "json"
 
+    # Notify service (email)
+    notify_service_url: str = "http://localhost:4000/api/notify-dispute"
+
     # Classification
     classification_confidence_threshold: float = 0.7
 

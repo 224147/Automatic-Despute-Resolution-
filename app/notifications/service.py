@@ -1,10 +1,12 @@
-"""Notification service – mock email, SMS, in-app notifications."""
+"""Notification service – mock in-app notifications plus a real email via notify-service."""
 from __future__ import annotations
 
 import uuid
 
+import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.enums import NotificationType
 from app.core.logging import get_logger
 from app.tools.banking import send_customer_notification
@@ -81,6 +83,35 @@ async def notify_customer(
         subject=subject,
         body=body,
     )
+
+    await _send_email_via_notify_service(
+        customer_id=customer_id,
+        customer_name=customer_name,
+        dispute_id=dispute_id,
+        response_text=body,
+    )
+
+
+async def _send_email_via_notify_service(
+    *, customer_id: uuid.UUID, customer_name: str, dispute_id: uuid.UUID, response_text: str
+) -> None:
+    """Best-effort call to the notify-service to send a real email. Never blocks the workflow."""
+    settings = get_settings()
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(
+                settings.notify_service_url,
+                json={
+                    "customerId": str(customer_id),
+                    "customerName": customer_name,
+                    "disputeId": str(dispute_id),
+                    "responseText": response_text,
+                },
+            )
+            resp.raise_for_status()
+        logger.info("notify_service_email_sent", dispute_id=str(dispute_id))
+    except Exception as e:
+        logger.warning("notify_service_unavailable", error=str(e))
 
 
 def _extract_keys(template: str) -> list[str]:

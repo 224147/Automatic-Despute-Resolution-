@@ -1,3 +1,9 @@
+try {
+  process.loadEnvFile();
+} catch {
+  // .env is optional — fall back to whatever is already in process.env
+}
+
 import express from "express";
 import { notifyDisputeResponse } from "./notifyDispute";
 
