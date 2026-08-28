@@ -1,4 +1,3 @@
-"""LangChain tool wrappers — expose banking services as tools agents can call."""
 """LangChain tool wrappers - expose banking services as tools agents can call."""
 
 from __future__ import annotations
