@@ -43,7 +43,8 @@ Workflow rules:
 1. If no dispute_id exists yet, the intake hasn't happened — but classification_agent handles intake too.
 2. If dispute_category is empty or UNKNOWN with low confidence, route to classification_agent.
 3. After classification, route to verification_agent to verify customer and find transaction.
-4. After verification, route to resolution_agent to evaluate rules and risk.
+4. Once customer_verified is true, route to resolution_agent to evaluate rules and risk —
+   do this even if transaction_verified is false; do not route back to verification_agent again.
 5. If resolution_decision is AUTO_RESOLVE, route to execution_agent.
 6. If resolution_decision is ESCALATE, or any critical issue, route to escalation_agent.
 7. If all steps are complete (a final_response exists), respond with FINISH.
@@ -92,6 +93,11 @@ async def supervisor_node(state: DisputeState) -> dict:
 
         if next_agent not in AGENT_NAMES and next_agent != "FINISH":
             logger.warning("supervisor_invalid_agent", suggested=next_agent)
+            next_agent = _deterministic_routing(state)
+
+        # Guard against the LLM looping back to verification once the customer
+        # is already verified — transaction_verified may legitimately stay false.
+        if next_agent == "verification_agent" and state.get("customer_verified"):
             next_agent = _deterministic_routing(state)
 
     except Exception as e:

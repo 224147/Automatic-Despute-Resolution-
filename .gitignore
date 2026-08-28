@@ -53,3 +53,11 @@ Thumbs.db
 frontend/node_modules/
 frontend/build/
 frontend/dist/
+
+# Node (notify-service)
+notify-service/node_modules/
+notify-service/dist/
+notify-service/.env
+
+# Audit trail (runtime output)
+audit_log.jsonl
