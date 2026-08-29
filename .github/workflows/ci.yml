@@ -23,7 +23,7 @@ jobs:
             pip install --upgrade setuptools wheel
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install ".[dev]"
       - name: Lint with ruff
         run: ruff check .
       - name: Type check with mypy
@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install ".[dev]"
       - name: Run unit tests
         run: pytest tests/ -v --cov=app --cov-report=term-missing --tb=short
       - name: Check coverage threshold
