@@ -1,0 +1,78 @@
+[
+  {
+    "text": "Debit and credit cards issued on demo accounts can be blocked instantly by the customer through this assistant.",
+    "source": "card_policy.md"
+  },
+  {
+    "text": "A blocked card cannot be unblocked automatically for security reasons if it was blocked due to a reported loss or theft \u2014 those cases require a replacement card, which takes 5-7 business days to arrive.",
+    "source": "card_policy.md"
+  },
+  {
+    "text": "Cards that have expired cannot be blocked or unblocked; they must be replaced.",
+    "source": "card_policy.md"
+  },
+  {
+    "text": "There is no fee for blocking a card.",
+    "source": "card_policy.md"
+  },
+  {
+    "text": "Unblocking a card that was blocked by the customer voluntarily is free and instant.",
+    "source": "card_policy.md"
+  },
+  {
+    "text": "There is no monthly maintenance fee for savings accounts that maintain the minimum balance requirement.",
+    "source": "fees.md"
+  },
+  {
+    "text": "Falling below the minimum balance attracts a fee of \u20b9250 per quarter.",
+    "source": "fees.md"
+  },
+  {
+    "text": "ATM withdrawals are free for the first 5 transactions per month at any bank's ATM; each transaction after that is charged \u20b920.",
+    "source": "fees.md"
+  },
+  {
+    "text": "There is no fee for online fund transfers (NEFT/IMPS) initiated through official banking channels.",
+    "source": "fees.md"
+  },
+  {
+    "text": "EMI payments are due on the date shown in the loan summary each month.",
+    "source": "loan_policy.md"
+  },
+  {
+    "text": "A missed EMI payment may attract a late fee of \u20b9500 and can affect the customer's credit score.",
+    "source": "loan_policy.md"
+  },
+  {
+    "text": "Foreclosure (early repayment) of a personal loan is allowed after 12 months from disbursement, subject to a foreclosure charge of 2% of the outstanding principal.",
+    "source": "loan_policy.md"
+  },
+  {
+    "text": "Home loans can be foreclosed at any time without a foreclosure charge, in line with regulatory guidelines for floating-rate loans.",
+    "source": "loan_policy.md"
+  },
+  {
+    "text": "The minimum balance requirement for the demo savings account is \u20b910,000.",
+    "source": "savings_policy.md"
+  },
+  {
+    "text": "Fees and policies are subject to the customer agreement.",
+    "source": "savings_policy.md"
+  },
+  {
+    "text": "Customers can dispute a transaction they do not recognize within 60 days of the transaction date.",
+    "source": "transaction_policy.md"
+  },
+  {
+    "text": "Disputed amounts are reviewed within 3-7 business days.",
+    "source": "transaction_policy.md"
+  },
+  {
+    "text": "If the dispute is upheld, the amount is refunded to the original account; if declined, the customer is notified with the reason.",
+    "source": "transaction_policy.md"
+  },
+  {
+    "text": "Completed transactions cannot be cancelled or reversed directly by the customer through this assistant \u2014 they must be raised as a dispute for investigation.",
+    "source": "transaction_policy.md"
+  }
+]

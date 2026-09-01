@@ -1,0 +1,11 @@
+services:
+  banking-assistant:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file: .env
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"

@@ -1,0 +1,13 @@
+# Environment variables
+.env
+.env*.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Runtime data
+database/*.db
