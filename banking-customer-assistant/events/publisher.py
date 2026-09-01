@@ -1,6 +1,7 @@
 import json
 import os
 
+
 def publish(event_type: str, payload: dict) -> bool:
     """POC publisher: RabbitMQ is optional; return False when unavailable."""
     if os.getenv("RABBITMQ_ENABLED", "false").lower() != "true":

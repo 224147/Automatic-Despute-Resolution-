@@ -2,7 +2,14 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from backend.session import start_login, verify_otp, validate_session, logout, SESSIONS, PENDING
+from backend.session import (
+    PENDING,
+    SESSIONS,
+    logout,
+    start_login,
+    validate_session,
+    verify_otp,
+)
 
 
 def test_otp_is_random_and_six_digits():

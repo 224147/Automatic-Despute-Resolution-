@@ -1,7 +1,7 @@
 import uuid
 
-from events.publisher import publish
 from events.consumers import audit_consumer, notification_consumer
+from events.publisher import publish
 
 
 def dispatch(event_type: str, payload: dict, customer_id: str, session_id: str = ""):

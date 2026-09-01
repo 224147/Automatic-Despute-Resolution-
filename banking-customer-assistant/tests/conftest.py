@@ -23,7 +23,7 @@ def isolated_database(tmp_path, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def reset_sessions():
-    from backend.session import SESSIONS, PENDING
+    from backend.session import PENDING, SESSIONS
     SESSIONS.clear()
     PENDING.clear()
     yield

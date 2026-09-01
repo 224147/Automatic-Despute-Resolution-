@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 from backend.main import app
 from database.database import save_idempotency
-from mock_banking.data import card_for_customer, block_card, get_cards
+from mock_banking.data import block_card, card_for_customer, get_cards
 from security.risk_policy import Risk, risk_for_intent
 
 client = TestClient(app)

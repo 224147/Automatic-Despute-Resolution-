@@ -1,4 +1,4 @@
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 
 class GraphState(TypedDict, total=False):
@@ -10,9 +10,9 @@ class GraphState(TypedDict, total=False):
     agent: str
     agent_result: Any
     response: Any
-    rag_confidence: Optional[float]
-    idempotency_key: Optional[str]
-    idempotency_result: Optional[str]
+    rag_confidence: float | None
+    idempotency_key: str | None
+    idempotency_result: str | None
     authorization: str
     ownership: str
     events: list

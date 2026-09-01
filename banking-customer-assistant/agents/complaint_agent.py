@@ -1,7 +1,12 @@
 import hashlib
 from datetime import datetime, timezone
 
-from database.database import create_complaint, get_complaint, find_idempotent, save_idempotency
+from database.database import (
+    create_complaint,
+    find_idempotent,
+    get_complaint,
+    save_idempotency,
+)
 from events.dispatch import dispatch
 
 

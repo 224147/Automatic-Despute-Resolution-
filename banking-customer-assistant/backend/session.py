@@ -1,7 +1,9 @@
+import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import secrets
+
 from mock_banking.data import get_customer
+
 
 @dataclass
 class PendingOTP:

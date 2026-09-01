@@ -1,5 +1,6 @@
 from fastapi import Header, HTTPException
-from backend.session import validate_session, SESSIONS
+
+from backend.session import SESSIONS, validate_session
 
 
 def get_current_customer(x_session_id: str = Header(...)) -> str:

@@ -1,5 +1,6 @@
 import os
 
+
 def preview_email(subject: str, body: str):
     return {"to": os.getenv("DEMO_EMAIL", "demo@test.com"), "subject": subject, "body": body}
 

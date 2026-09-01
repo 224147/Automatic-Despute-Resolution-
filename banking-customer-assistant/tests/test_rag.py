@@ -1,4 +1,4 @@
-from rag.retrieval import answer_policy, THRESHOLD
+from rag.retrieval import THRESHOLD, answer_policy
 
 
 def test_high_confidence_answers_from_retrieved_context():

@@ -1,4 +1,4 @@
-from mock_banking.data import get_cards, card_for_customer
+from mock_banking.data import card_for_customer, get_cards
 
 
 def cards(customer_id):

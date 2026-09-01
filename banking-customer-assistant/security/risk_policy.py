@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Risk(str, Enum):
     READ = "READ"
     SENSITIVE_READ = "SENSITIVE_READ"

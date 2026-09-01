@@ -1,5 +1,6 @@
 from mock_banking.data import get_account, get_transactions
 
+
 def account_summary(customer_id): return get_account(customer_id)
 def transactions(customer_id): return get_transactions(customer_id)
 
