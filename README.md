@@ -29,24 +29,25 @@ graph TD
 ### LangGraph Workflow
 
 ```mermaid
-stateDiagram-v2
-    [*] --> intake
-    intake --> classify
-    classify --> authenticate
-    classify --> clarification: low confidence
-    authenticate --> identify_transaction
-    authenticate --> escalate: auth failed
-    identify_transaction --> verify_transaction
-    verify_transaction --> retrieve_policy
-    retrieve_policy --> evaluate_rules
-    evaluate_rules --> assess_risk
-    assess_risk --> resolution_decision
-    resolution_decision --> execute_action: eligible + low risk
-    resolution_decision --> escalate: ineligible / high risk
-    execute_action --> notify
-    escalate --> notify
-    notify --> audit
-    audit --> [*]
+flowchart TD
+  Start([Dispute submitted]) --> Supervisor[Supervisor Agent]
+
+  Supervisor -->|Classify| Classification[Classification Agent]
+  Classification --> Supervisor
+
+  Supervisor -->|Verify customer and transaction| Verification[Verification Agent]
+  Verification --> Supervisor
+
+  Supervisor -->|Evaluate policy, rules, and risk| Resolution[Resolution Agent]
+  Resolution --> Supervisor
+
+  Supervisor -->|AUTO_RESOLVE| Execution[Execution Agent]
+  Execution --> Supervisor
+
+  Supervisor -->|ESCALATE| Escalation[Escalation Agent]
+  Escalation --> Supervisor
+
+  Supervisor -->|FINISH| End([Workflow complete])
 ```
 
 ## Key Features
